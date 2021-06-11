@@ -88,7 +88,7 @@ resource "aws_ecs_service" "books_api" {
     security_groups  = [aws_security_group.ecs_tasks.id]
     subnets          = aws_subnet.private.*.id
     # set it to false
-    assign_public_ip = true
+    assign_public_ip = false
   }
 
   load_balancer {
@@ -146,7 +146,7 @@ resource "aws_ecs_service" "users_api" {
     security_groups  = [aws_security_group.ecs_tasks.id]
     subnets          = aws_subnet.private.*.id
     # set it to false
-    assign_public_ip = true
+    assign_public_ip = false
   }
 
   load_balancer {
