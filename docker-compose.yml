@@ -1,0 +1,14 @@
+version: '3'
+services:
+  usersService:
+    build: ./usersService
+    ports:
+      - 3000:3000
+    volumes:
+      - ./usersService/src:/usr/local/usersService
+  booksService:
+    build: ./booksService
+    ports:
+      - 5000:5000
+    volumes:
+      - ./booksService/src:/usr/local/booksService
