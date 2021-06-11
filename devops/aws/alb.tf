@@ -39,27 +39,6 @@ resource "aws_alb_listener" "main" {
   }
 }
 
-
-################################################################################
-# Books API Listener
-################################################################################
-# Redirect all traffic from the ALB to the target group
-resource "aws_alb_listener_rule" "books_api" {
-  listener_arn = aws_alb_listener.main.arn
-  priority     = 1
-
-  action {
-    type             = "forward"
-    target_group_arn = aws_alb_target_group.books_api.arn
-  }
-
-  condition {
-    path_pattern {
-      values = ["/books/*"]
-    }
-  }
-}
-
 ################################################################################
 # Users API Target Group
 ################################################################################
@@ -89,13 +68,32 @@ resource "aws_alb_listener_rule" "users_api" {
   priority     = 2
 
   action {
-    type             = "forward"
+    type             = "forward" # Redirect all traffic from the ALB to the target group
     target_group_arn = aws_alb_target_group.users_api.arn
   }
 
   condition {
     path_pattern {
-      values = ["/*"]
+      values = ["/users", "/users/*"]
+    }
+  }
+}
+
+################################################################################
+# Books API Listener
+################################################################################
+resource "aws_alb_listener_rule" "books_api" {
+  listener_arn = aws_alb_listener.main.arn
+  priority     = 1
+
+  action {
+    type             = "forward" # Redirect all traffic from the ALB to the target group
+    target_group_arn = aws_alb_target_group.books_api.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/books", "/books/*"]
     }
   }
 }

@@ -1,9 +1,12 @@
-# ALB Security Group: Edit to restrict access to the application
+################################################################################
+# ALB SG
+################################################################################
 resource "aws_security_group" "lb" {
   name        = "load-balancer-security-group"
   description = "controls access to the ALB"
   vpc_id      = aws_vpc.main.id
 
+  # Accept incoming access to port 80 from anywhere
   ingress {
     protocol    = "tcp"
     from_port   = 80
@@ -19,51 +22,27 @@ resource "aws_security_group" "lb" {
   }
 }
 
-# Traffic to the ECS cluster should only come from the ALB
+################################################################################
+# ECS cluster tasks SG
+################################################################################
 resource "aws_security_group" "ecs_tasks" {
   name        = "ecs-tasks-security-group"
   description = "allow inbound access from the ALB only"
   vpc_id      = aws_vpc.main.id
 
+  # Traffic to the ECS cluster should only come from the ALB SG
   ingress {
-    protocol        = "tcp"
-    from_port       = 80
-    to_port         = var.books_api_port
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+    # Only allowing traffic in from the load balancer security group
     security_groups = [aws_security_group.lb.id]
   }
 
-  ingress {
-    protocol        = "tcp"
-    from_port       = 80
-    to_port         = var.books_api_port
-    self            = true
-  }
-
-  ingress {
-    protocol        = "tcp"
-    from_port       = 80
-    to_port         = var.users_api_port
-    security_groups = [aws_security_group.lb.id]
-  }
-
-  ingress {
-    protocol        = "tcp"
-    from_port       = 80
-    to_port         = var.users_api_port
-    self            = true
-  }
-
   egress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    protocol    = "-1"
-    from_port   = 0
-    to_port     = 0
-    ipv6_cidr_blocks = ["::/0"]
+    from_port   = 0 # Allowing any incoming port
+    to_port     = 0 # Allowing any outgoing port
+    protocol    = "-1" # Allowing any outgoing protocol 
+    cidr_blocks = ["0.0.0.0/0"] # Allowing traffic out to all IP addresses
   }
 }
