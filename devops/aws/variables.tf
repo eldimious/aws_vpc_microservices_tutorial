@@ -39,35 +39,35 @@ variable "fargate_memory" {
 }
 
 ################################################################################
-# API Service Configuration
+# API Books Service Configuration
 ################################################################################
-variable "api_port" {
-  description = "Port exposed by the API image"
-  default     = 8080
+variable "books_api_port" {
+  description = "Port exposed by the books image"
+  default     = 5000
 }
 
-variable "api_count" {
-  description = "Number of API docker containers to run"
+variable "books_api_count" {
+  description = "Number of books docker containers to run"
   default     = 1
 }
 
-variable "api_health_check_path" {
-  default = "/api/"
+variable "books_api_health_check_path" {
+  default = "/books/"
 }
 
 ################################################################################
-# Frontend Service Configuration
+# API Users Service Configuration
 ################################################################################
-variable "fe_port" {
-  description = "Port exposed by the frontend image"
+variable "users_api_port" {
+  description = "Port exposed by the users image"
   default     = 3000
 }
 
-variable "fe_count" {
-  description = "Number of frontend docker containers to run"
+variable "users_api_count" {
+  description = "Number of users docker containers to run"
   default     = 1
 }
 
-variable "fe_health_check_path" {
-  default = "/"
+variable "users_api_health_check_path" {
+  default = "/users"
 }
