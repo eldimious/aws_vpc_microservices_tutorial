@@ -11,8 +11,8 @@ resource "aws_service_discovery_private_dns_namespace" "segment" {
   vpc         = aws_vpc.main.id
 }
 
-resource "aws_service_discovery_service" "books-api-service" {
-  name = "books-api-service"
+resource "aws_service_discovery_service" "books_api_service" {
+  name = "books_api_service"
 
   dns_config {
     namespace_id = aws_service_discovery_private_dns_namespace.segment.id
@@ -26,8 +26,8 @@ resource "aws_service_discovery_service" "books-api-service" {
   }
 }
 
-resource "aws_service_discovery_service" "users-api-service" {
-  name = "users-api-service"
+resource "aws_service_discovery_service" "users_api_service" {
+  name = "users_api_service"
 
   dns_config {
     namespace_id = aws_service_discovery_private_dns_namespace.segment.id
@@ -62,7 +62,7 @@ data "template_file" "books_api" {
 }
 
 resource "aws_ecs_task_definition" "books_api" {
-  family                   = "books-api-task"
+  family                   = "books_api_task"
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
@@ -75,8 +75,8 @@ resource "aws_ecs_task_definition" "books_api" {
 # BOOKS API ECS Service
 ################################################################################
 
-resource "aws_ecs_service" "books-api" {
-  name            = "books-api"
+resource "aws_ecs_service" "books_api" {
+  name            = "books_api"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.books_api.arn
   desired_count   = var.books_api_count
@@ -97,7 +97,7 @@ resource "aws_ecs_service" "books-api" {
   }
 
   service_registries {
-    registry_arn = aws_service_discovery_service.books-api-service.arn
+    registry_arn = aws_service_discovery_service.books_api_service.arn
   }
 
   depends_on = [aws_alb_listener.main, aws_iam_role_policy_attachment.ecs_task_execution_role]
@@ -119,7 +119,7 @@ data "template_file" "users_api" {
 }
 
 resource "aws_ecs_task_definition" "users_api" {
-  family                   = "users-api-task"
+  family                   = "users_api_task"
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
@@ -133,7 +133,7 @@ resource "aws_ecs_task_definition" "users_api" {
 ################################################################################
 
 resource "aws_ecs_service" "users_api" {
-  name            = "users-api"
+  name            = "users_api"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.users_api.arn
   desired_count   = var.users_api_count
@@ -154,7 +154,7 @@ resource "aws_ecs_service" "users_api" {
   }
 
   service_registries {
-    registry_arn = aws_service_discovery_service.users-api-service.arn
+    registry_arn = aws_service_discovery_service.users_api_service.arn
   }
 
   depends_on = [aws_alb_listener.main, aws_iam_role_policy_attachment.ecs_task_execution_role]
