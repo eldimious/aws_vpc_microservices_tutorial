@@ -1,1 +1,1 @@
-cd ./devops/aws && terraform destroy
+cd ./devops/aws/ecs_fargate && terraform destroy
