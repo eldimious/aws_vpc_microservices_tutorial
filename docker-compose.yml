@@ -1,14 +1,20 @@
-version: '3'
+version: '3.4'
 services:
   usersService:
-    build: ./usersService
+    image: users-service
+    build:
+      context: ./services/usersService
+      dockerfile: Dockerfile
+    container_name: users-service
+    command: npm start
     ports:
-      - 3000:3000
-    volumes:
-      - ./usersService/src:/usr/local/usersService
+      - "3000:3000"
   booksService:
-    build: ./booksService
+    image: books-service
+    build:
+      context: ./services/booksService
+      dockerfile: Dockerfile
+    container_name: books-service
+    command: npm start
     ports:
-      - 5000:5000
-    volumes:
-      - ./booksService/src:/usr/local/booksService
+      - "5000:5000"
