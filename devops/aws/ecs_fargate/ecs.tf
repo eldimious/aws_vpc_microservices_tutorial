@@ -45,6 +45,8 @@ resource "aws_service_discovery_service" "users_api_service" {
   }
 }
 
+# TODO:
+# Merge ecs tasks in one definition using count
 
 ################################################################################
 # BOOKS API ECS Tasks
@@ -54,10 +56,12 @@ data "template_file" "books_api" {
 
   vars = {
     books_api_image      = "eldimious/books:latest"
-    books_api_port       = var.books_api_port
-    fargate_cpu    = var.fargate_cpu
-    fargate_memory = var.fargate_memory
-    aws_region     = var.aws_region
+    container_port       = var.books_api_port
+    host_port            = var.books_api_port
+    fargate_cpu          = var.fargate_cpu
+    fargate_memory       = var.fargate_memory
+    aws_region           = var.aws_region
+    aws_logs_group       = "/ecs/books_api"
   }
 }
 
@@ -112,10 +116,12 @@ data "template_file" "users_api" {
 
   vars = {
     users_api_image       = "eldimious/users:latest"
-    users_api_port        = var.users_api_port
-    fargate_cpu    = var.fargate_cpu
-    fargate_memory = var.fargate_memory
-    aws_region     = var.aws_region
+    container_port        = var.users_api_port
+    host_port             = var.users_api_port
+    fargate_cpu           = var.fargate_cpu
+    fargate_memory        = var.fargate_memory
+    aws_region            = var.aws_region
+    aws_logs_group       = "/ecs/users_api"
   }
 }
 
