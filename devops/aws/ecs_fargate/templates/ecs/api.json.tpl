@@ -1,7 +1,7 @@
 [
   {
-    "name": "users_api",
-    "image": "${users_api_image}",
+    "name": "${service_name}",
+    "image": "${image}",
     "cpu": ${fargate_cpu},
     "memory": ${fargate_memory},
     "networkMode": "awsvpc",
