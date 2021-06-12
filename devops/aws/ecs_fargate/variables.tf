@@ -12,7 +12,7 @@ variable "aws_region" {
 ################################################################################
 variable "project" {
   description = "Project name"
-  default     = "project"
+  default     = "ecs_fargate_ms"
 }
 
 ################################################################################
@@ -70,4 +70,12 @@ variable "users_api_count" {
 
 variable "users_api_health_check_path" {
   default = "/users"
+}
+
+################################################################################
+# ALB Configuration
+################################################################################
+variable "internal_elb" {
+  description = "Make ALB private? (Compute nodes are always private under ALB)"
+  default     = false
 }
