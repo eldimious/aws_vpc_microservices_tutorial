@@ -12,7 +12,7 @@ resource "aws_alb" "main" {
 ################################################################################
 resource "aws_alb_target_group" "books_api" {
   name        = "books-api-tg"
-  port        = 80
+  port        = var.books_api_port
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
   target_type = "instance"

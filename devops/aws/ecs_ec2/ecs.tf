@@ -14,6 +14,7 @@ resource "aws_launch_configuration" "ecs_launch_config" {
     image_id = data.aws_ami.amazon-linux-2.image_id
     iam_instance_profile = aws_iam_instance_profile.ecs.arn
     instance_type = "t2.micro"
+    user_data                   = "#!/bin/bash\necho ECS_CLUSTER=app-cluster >> /etc/ecs/ecs.config"
     security_groups = ["${aws_security_group.ecs_tasks.id}"]
     associate_public_ip_address = false
 }
@@ -58,14 +59,10 @@ resource "aws_iam_role_policy_attachment" "ecs_attach" {
   role       = aws_iam_role.ecs.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
 }
-# resource "aws_launch_configuration" "ecs_launch_config" {
-#   image_id                    = "ami-09a3cad575b7eabaa"
-#   iam_instance_profile        = aws_iam_instance_profile.ecs.arn
-#   security_groups             = [aws_security_group.ecs_task.id]
-#   user_data                   = "#!/bin/bash\necho ECS_CLUSTER=app-cluster >> /etc/ecs/ecs.config"
-#   instance_type               = "t2.micro"
-#   associate_public_ip_address = true
-# }
+resource "aws_iam_role_policy_attachment" "ecs-service-attach" {
+  role       = "${aws_iam_role.ecs-service-role.name}"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole"
+}
 
 resource "aws_ecs_cluster" "main" {
   name = "${var.project}-cluster"
@@ -103,12 +100,12 @@ resource "aws_ecs_service" "books_api" {
   task_definition = aws_ecs_task_definition.books_api.arn
   launch_type     = "EC2"
   desired_count   = 1
-
+  iam_role        = "${aws_iam_role.ecs-service-role.arn}"
   load_balancer {
     target_group_arn = aws_alb_target_group.books_api.id
     container_name   = "books_api"
     container_port   = var.books_api_port      # attaching load_balancer target group to ecs
   }
 
-  depends_on = [aws_alb_listener.main]
+  depends_on      = [aws_iam_role_policy_attachment.ecs-service-attach]
 }
