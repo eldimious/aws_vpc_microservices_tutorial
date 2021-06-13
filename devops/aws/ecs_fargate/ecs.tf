@@ -46,7 +46,7 @@ resource "aws_service_discovery_service" "users_api_service" {
 }
 
 # TODO:
-# Merge ecs tasks in one definition using count
+# Merge ecs tasks in one definition using foreach
 
 ################################################################################
 # BOOKS API ECS Tasks
@@ -92,7 +92,6 @@ resource "aws_ecs_service" "books_api" {
   network_configuration {
     security_groups  = [aws_security_group.ecs_tasks.id]
     subnets          = aws_subnet.private.*.id
-    # set it to false
     assign_public_ip = false
   }
 
@@ -153,7 +152,6 @@ resource "aws_ecs_service" "users_api" {
   network_configuration {
     security_groups  = [aws_security_group.ecs_tasks.id]
     subnets          = aws_subnet.private.*.id
-    # set it to false
     assign_public_ip = false
   }
 

@@ -8,6 +8,24 @@ variable "aws_region" {
 //variable "docker_repo" {}
 
 ################################################################################
+# Network Configuration
+################################################################################
+variable "cidr_block" {
+  description = "Network IP range"
+  default     = "172.17.0.0/16"
+}
+
+variable "enable_dns_support" {
+  description = "DNS support"
+  default     = true
+}
+
+variable "enable_dns_hostnames" {
+  description = "DNS hostnames"
+  default     = true
+}
+
+################################################################################
 # Project metadata
 ################################################################################
 variable "project" {

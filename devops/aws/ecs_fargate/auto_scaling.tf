@@ -1,5 +1,5 @@
 # TODO:
-# Merge ASG in one definition using count
+# Merge ASG in one definition using foreach
 
 ################################################################################
 # BOOKS API Scale Target
