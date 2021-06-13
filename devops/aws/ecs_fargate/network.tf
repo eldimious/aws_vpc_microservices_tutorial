@@ -6,9 +6,9 @@ data "aws_availability_zones" "available" {
 # VPC Definition
 ################################################################################
 resource "aws_vpc" "main" {
-  cidr_block           = "172.17.0.0/16"
-  enable_dns_support   = true
-  enable_dns_hostnames = true
+  cidr_block           = var.cidr_block
+  enable_dns_support   = var.enable_dns_support
+  enable_dns_hostnames = var.enable_dns_hostnames
 }
 
 ################################################################################

@@ -15,7 +15,7 @@ resource "aws_alb_target_group" "books_api" {
   port        = 80
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
-  target_type = "ip"
+  target_type = "instance"
 
   health_check {
     healthy_threshold   = "3"
@@ -39,45 +39,45 @@ resource "aws_alb_listener" "main" {
   }
 }
 
-################################################################################
-# Users API Target Group
-################################################################################
-resource "aws_alb_target_group" "users_api" {
-  name        = "users-api-tg"
-  port        = 80
-  protocol    = "HTTP"
-  vpc_id      = aws_vpc.main.id
-  target_type = "ip"
+# ################################################################################
+# # Users API Target Group
+# ################################################################################
+# resource "aws_alb_target_group" "users_api" {
+#   name        = "users-api-tg"
+#   port        = 80
+#   protocol    = "HTTP"
+#   vpc_id      = aws_vpc.main.id
+#   target_type = "ip"
 
-  health_check {
-    healthy_threshold   = "3"
-    interval            = "30"
-    protocol            = "HTTP"
-    matcher             = "200"
-    timeout             = "3"
-    path                = var.users_api_health_check_path
-    unhealthy_threshold = "2"
-  }
-}
+#   health_check {
+#     healthy_threshold   = "3"
+#     interval            = "30"
+#     protocol            = "HTTP"
+#     matcher             = "200"
+#     timeout             = "3"
+#     path                = var.users_api_health_check_path
+#     unhealthy_threshold = "2"
+#   }
+# }
 
-################################################################################
-# Users API Listeners
-################################################################################
-resource "aws_alb_listener_rule" "users_api" {
-  listener_arn = aws_alb_listener.main.arn
-  priority     = 2
+# ################################################################################
+# # Users API Listeners
+# ################################################################################
+# resource "aws_alb_listener_rule" "users_api" {
+#   listener_arn = aws_alb_listener.main.arn
+#   priority     = 2
 
-  action {
-    type             = "forward" # Redirect all traffic from the ALB to the target group
-    target_group_arn = aws_alb_target_group.users_api.arn
-  }
+#   action {
+#     type             = "forward" # Redirect all traffic from the ALB to the target group
+#     target_group_arn = aws_alb_target_group.users_api.arn
+#   }
 
-  condition {
-    path_pattern {
-      values = ["/users", "/users/*"]
-    }
-  }
-}
+#   condition {
+#     path_pattern {
+#       values = ["/users", "/users/*"]
+#     }
+#   }
+# }
 
 ################################################################################
 # Books API Listener

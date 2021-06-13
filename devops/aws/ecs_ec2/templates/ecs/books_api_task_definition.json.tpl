@@ -1,32 +1,20 @@
 [
   {
-    "name": "books_api",
-    "image": "${books_api_image}",
+    "name": "${service_name}",
+    "image": "${image}",
     "cpu": ${fargate_cpu},
     "memory": ${fargate_memory},
     "entryPoint": [],
-    "environment": [
-        { 
-            "name" : "ENDPOINT", 
-            "value" : "${alb}"
-        }
-    ],
+    "environment": [],
     "portMappings": [
       {
-        "hostPort": 0,
+        "hostPort": ${container_port},
         "containerPort": ${container_port},
         "protocol": "tcp"
       }
     ],
     "volumesFrom": [],
     "links": [],
-    "mountPoints": [
-      {
-        "sourceVolume": "efs",
-        "containerPath": "/mnt",
-        "readOnly": false
-      }
-    ],
     "logConfiguration": {
         "logDriver": "awslogs",
         "options": {

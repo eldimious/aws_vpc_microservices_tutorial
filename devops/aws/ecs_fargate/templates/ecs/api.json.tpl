@@ -1,22 +1,22 @@
 [
   {
-    "name": "books_api",
-    "image": "${books_api_image}",
+    "name": "${service_name}",
+    "image": "${image}",
     "cpu": ${fargate_cpu},
     "memory": ${fargate_memory},
     "networkMode": "awsvpc",
     "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/books_api",
+          "awslogs-group": "${aws_logs_group}",
           "awslogs-region": "${aws_region}",
           "awslogs-stream-prefix": "ecs"
         }
     },
     "portMappings": [
       {
-        "containerPort": ${books_api_port},
-        "hostPort": ${books_api_port}
+        "containerPort": ${container_port},
+        "hostPort": ${host_port}
       }
     ]
   }

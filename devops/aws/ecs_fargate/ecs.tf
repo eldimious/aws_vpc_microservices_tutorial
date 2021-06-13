@@ -45,19 +45,24 @@ resource "aws_service_discovery_service" "users_api_service" {
   }
 }
 
+# TODO:
+# Merge ecs tasks in one definition using foreach
 
 ################################################################################
 # BOOKS API ECS Tasks
 ################################################################################
 data "template_file" "books_api" {
-  template = file("./templates/ecs/books_api.json.tpl")
+  template = file("./templates/ecs/api.json.tpl")
 
   vars = {
-    books_api_image      = "eldimious/books:latest"
-    books_api_port       = var.books_api_port
-    fargate_cpu    = var.fargate_cpu
-    fargate_memory = var.fargate_memory
-    aws_region     = var.aws_region
+    service_name         = "books_api"
+    image                = "eldimious/books:latest"
+    container_port       = var.books_api_port
+    host_port            = var.books_api_port
+    fargate_cpu          = var.fargate_cpu
+    fargate_memory       = var.fargate_memory
+    aws_region           = var.aws_region
+    aws_logs_group       = "/ecs/books_api"
   }
 }
 
@@ -87,7 +92,6 @@ resource "aws_ecs_service" "books_api" {
   network_configuration {
     security_groups  = [aws_security_group.ecs_tasks.id]
     subnets          = aws_subnet.private.*.id
-    # set it to false
     assign_public_ip = false
   }
 
@@ -108,14 +112,17 @@ resource "aws_ecs_service" "books_api" {
 # USERS API ECS Tasks
 ################################################################################
 data "template_file" "users_api" {
-  template = file("./templates/ecs/users_api.json.tpl")
+  template = file("./templates/ecs/api.json.tpl")
 
   vars = {
-    users_api_image       = "eldimious/users:latest"
-    users_api_port        = var.users_api_port
-    fargate_cpu    = var.fargate_cpu
-    fargate_memory = var.fargate_memory
-    aws_region     = var.aws_region
+    service_name          = "users_api"
+    image                 = "eldimious/users:latest"
+    container_port        = var.users_api_port
+    host_port             = var.users_api_port
+    fargate_cpu           = var.fargate_cpu
+    fargate_memory        = var.fargate_memory
+    aws_region            = var.aws_region
+    aws_logs_group        = "/ecs/users_api"
   }
 }
 
@@ -145,7 +152,6 @@ resource "aws_ecs_service" "users_api" {
   network_configuration {
     security_groups  = [aws_security_group.ecs_tasks.id]
     subnets          = aws_subnet.private.*.id
-    # set it to false
     assign_public_ip = false
   }
 

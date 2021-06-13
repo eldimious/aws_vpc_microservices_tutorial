@@ -28,6 +28,25 @@ resource "aws_alb_target_group" "books_api" {
   }
 }
 
+################################################################################
+# Books API Listener
+################################################################################
+resource "aws_alb_listener_rule" "books_api" {
+  listener_arn = aws_alb_listener.main.arn
+  priority     = 1
+
+  action {
+    type             = "forward" # Redirect all traffic from the ALB to the target group
+    target_group_arn = aws_alb_target_group.books_api.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/books", "/books/*"]
+    }
+  }
+}
+
 resource "aws_alb_listener" "main" {
   load_balancer_arn = aws_alb.main.id
   port              = 80
@@ -75,25 +94,6 @@ resource "aws_alb_listener_rule" "users_api" {
   condition {
     path_pattern {
       values = ["/users", "/users/*"]
-    }
-  }
-}
-
-################################################################################
-# Books API Listener
-################################################################################
-resource "aws_alb_listener_rule" "books_api" {
-  listener_arn = aws_alb_listener.main.arn
-  priority     = 1
-
-  action {
-    type             = "forward" # Redirect all traffic from the ALB to the target group
-    target_group_arn = aws_alb_target_group.books_api.arn
-  }
-
-  condition {
-    path_pattern {
-      values = ["/books", "/books/*"]
     }
   }
 }
