@@ -8,8 +8,8 @@ resource "aws_appautoscaling_target" "books_api_target" {
   service_namespace  = "ecs"
   resource_id        = "service/${aws_ecs_cluster.main.name}/${aws_ecs_service.books_api.name}"
   scalable_dimension = "ecs:service:DesiredCount"
-  min_capacity       = 1
-  max_capacity       = 2
+  min_capacity       = var.books_api_desired_count
+  max_capacity       = var.books_api_max_count
 }
 
 # Automatically scale capacity up by one
@@ -100,8 +100,8 @@ resource "aws_appautoscaling_target" "users_api_target" {
   service_namespace  = "ecs"
   resource_id        = "service/${aws_ecs_cluster.main.name}/${aws_ecs_service.users_api.name}"
   scalable_dimension = "ecs:service:DesiredCount"
-  min_capacity       = 1
-  max_capacity       = 2
+  min_capacity       = var.users_api_desired_count
+  max_capacity       = var.users_api_max_count
 }
 
 # Automatically scale capacity up by one

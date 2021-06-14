@@ -7,10 +7,21 @@ resource "aws_alb" "main" {
   security_groups = [aws_security_group.lb.id]
 }
 
+resource "aws_alb_listener" "main" {
+  load_balancer_arn = aws_alb.main.id
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    target_group_arn = aws_alb_target_group.books_api_tg.id
+    type             = "forward"
+  }
+}
+
 ################################################################################
 # Books API Target Group
 ################################################################################
-resource "aws_alb_target_group" "books_api" {
+resource "aws_alb_target_group" "books_api_tg" {
   name        = "books-api-tg"
   port        = 80
   protocol    = "HTTP"
@@ -31,13 +42,13 @@ resource "aws_alb_target_group" "books_api" {
 ################################################################################
 # Books API Listener
 ################################################################################
-resource "aws_alb_listener_rule" "books_api" {
+resource "aws_alb_listener_rule" "books_api_listener_rule" {
   listener_arn = aws_alb_listener.main.arn
   priority     = 1
 
   action {
     type             = "forward" # Redirect all traffic from the ALB to the target group
-    target_group_arn = aws_alb_target_group.books_api.arn
+    target_group_arn = aws_alb_target_group.books_api_tg.arn
   }
 
   condition {
@@ -47,21 +58,10 @@ resource "aws_alb_listener_rule" "books_api" {
   }
 }
 
-resource "aws_alb_listener" "main" {
-  load_balancer_arn = aws_alb.main.id
-  port              = 80
-  protocol          = "HTTP"
-
-  default_action {
-    target_group_arn = aws_alb_target_group.books_api.id
-    type             = "forward"
-  }
-}
-
 ################################################################################
 # Users API Target Group
 ################################################################################
-resource "aws_alb_target_group" "users_api" {
+resource "aws_alb_target_group" "users_api_tg" {
   name        = "users-api-tg"
   port        = 80
   protocol    = "HTTP"
@@ -82,13 +82,13 @@ resource "aws_alb_target_group" "users_api" {
 ################################################################################
 # Users API Listeners
 ################################################################################
-resource "aws_alb_listener_rule" "users_api" {
+resource "aws_alb_listener_rule" "users_api_listener_rule" {
   listener_arn = aws_alb_listener.main.arn
   priority     = 2
 
   action {
     type             = "forward" # Redirect all traffic from the ALB to the target group
-    target_group_arn = aws_alb_target_group.users_api.arn
+    target_group_arn = aws_alb_target_group.users_api_tg.arn
   }
 
   condition {
