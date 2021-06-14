@@ -14,6 +14,7 @@ app.use(compress);
 app.use(cors());
 
 app.get('/books', async (req, res, next) => {
+    console.log("Enter books route handler");
     return res.status(200).send('Books connected.');
 });
 

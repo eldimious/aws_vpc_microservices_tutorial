@@ -9,6 +9,21 @@ resource "aws_vpc" "main" {
   cidr_block           = var.cidr_block
   enable_dns_support   = var.enable_dns_support
   enable_dns_hostnames = var.enable_dns_hostnames
+  tags = {
+    Name        = "${var.project}_${var.environment}_vpc"
+    Environment = var.environment
+  }
+}
+
+################################################################################
+# IG Definition
+################################################################################
+resource "aws_internet_gateway" "gw" {
+  vpc_id = aws_vpc.main.id
+  tags = {
+    Name        = "${var.project}_${var.environment}_ig"
+    Environment = var.environment
+  }
 }
 
 ################################################################################
@@ -20,6 +35,10 @@ resource "aws_subnet" "private" {
   cidr_block        = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index)
   availability_zone = data.aws_availability_zones.available.names[count.index]
   vpc_id            = aws_vpc.main.id
+  tags = {
+    Name        = "${var.project}_${var.environment}_private_subnet"
+    Environment = var.environment
+  }
 }
 
 ################################################################################
@@ -32,13 +51,10 @@ resource "aws_subnet" "public" {
   availability_zone       = data.aws_availability_zones.available.names[count.index]
   vpc_id                  = aws_vpc.main.id
   map_public_ip_on_launch = true
-}
-
-################################################################################
-# IG Definition
-################################################################################
-resource "aws_internet_gateway" "gw" {
-  vpc_id = aws_vpc.main.id
+  tags = {
+    Name        = "${var.project}_${var.environment}_public_subnet"
+    Environment = var.environment
+  }
 }
 
 ################################################################################

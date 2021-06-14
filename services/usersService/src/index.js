@@ -13,6 +13,7 @@ app.use(compress);
 app.use(cors());
 
 app.use('/users', async (req, res, next) => {
+    console.log("Enter users route handler");
     return res.status(200).send('Users connected.');
 });
 
