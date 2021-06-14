@@ -2,7 +2,7 @@
 # ECS Cluster definition
 ################################################################################
 resource "aws_ecs_cluster" "main" {
-  name = "${var.project}-cluster"
+  name = "${var.project}_cluster"
 }
 
 resource "aws_service_discovery_private_dns_namespace" "segment" {
@@ -11,33 +11,33 @@ resource "aws_service_discovery_private_dns_namespace" "segment" {
   vpc         = aws_vpc.main.id
 }
 
-resource "aws_service_discovery_service" "books_api_service" {
+resource "aws_service_discovery_service" "books_api_service_discovery" {
   name = "books_api_service"
 
   dns_config {
     namespace_id = aws_service_discovery_private_dns_namespace.segment.id
 
     dns_records {
-      ttl  = 10
+      ttl  = var.discovery_ttl
       type = "A"
     }
 
-    routing_policy = "MULTIVALUE"
+    routing_policy = var.discovery_routing_policy
   }
 }
 
-resource "aws_service_discovery_service" "users_api_service" {
+resource "aws_service_discovery_service" "users_api_service_discovery" {
   name = "users_api_service"
 
   dns_config {
     namespace_id = aws_service_discovery_private_dns_namespace.segment.id
 
     dns_records {
-      ttl  = 10
+      ttl  = var.discovery_ttl
       type = "A"
     }
 
-    routing_policy = "MULTIVALUE"
+    routing_policy = var.discovery_routing_policy
   }
 
   health_check_custom_config {
@@ -53,21 +53,20 @@ resource "aws_service_discovery_service" "users_api_service" {
 ################################################################################
 data "template_file" "books_api" {
   template = file("./templates/ecs/api.json.tpl")
-
   vars = {
-    service_name         = "books_api"
-    image                = "eldimious/books:latest"
+    service_name         = var.books_api_name
+    image                = var.books_api_image
     container_port       = var.books_api_port
     host_port            = var.books_api_port
     fargate_cpu          = var.fargate_cpu
     fargate_memory       = var.fargate_memory
     aws_region           = var.aws_region
-    aws_logs_group       = "/ecs/books_api"
+    aws_logs_group       = var.books_api_aws_logs_group
   }
 }
 
 resource "aws_ecs_task_definition" "books_api" {
-  family                   = "books_api_task"
+  family                   = var.books_api_task_family
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
@@ -79,15 +78,14 @@ resource "aws_ecs_task_definition" "books_api" {
 ################################################################################
 # BOOKS API ECS Service
 ################################################################################
-
 resource "aws_ecs_service" "books_api" {
-  name            = "books_api"
+  name            = var.books_api_name
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.books_api.arn
-  desired_count   = var.books_api_count
+  desired_count   = var.books_api_desired_count
   launch_type     = "FARGATE"
 
-  health_check_grace_period_seconds = 180
+  health_check_grace_period_seconds = var.health_check_grace_period_seconds
 
   network_configuration {
     security_groups  = [aws_security_group.ecs_tasks.id]
@@ -96,13 +94,13 @@ resource "aws_ecs_service" "books_api" {
   }
 
   load_balancer {
-    target_group_arn = aws_alb_target_group.books_api.id
-    container_name   = "books_api"
+    target_group_arn = aws_alb_target_group.books_api_tg.id
+    container_name   = var.books_api_name
     container_port   = var.books_api_port
   }
 
   service_registries {
-    registry_arn = aws_service_discovery_service.books_api_service.arn
+    registry_arn = aws_service_discovery_service.books_api_service_discovery.arn
   }
 
   depends_on = [aws_alb_listener.main, aws_iam_role_policy_attachment.ecs_task_execution_role]
@@ -115,19 +113,19 @@ data "template_file" "users_api" {
   template = file("./templates/ecs/api.json.tpl")
 
   vars = {
-    service_name          = "users_api"
-    image                 = "eldimious/users:latest"
+    service_name          = var.users_api_name
+    image                 = var.users_api_image
     container_port        = var.users_api_port
     host_port             = var.users_api_port
     fargate_cpu           = var.fargate_cpu
     fargate_memory        = var.fargate_memory
     aws_region            = var.aws_region
-    aws_logs_group        = "/ecs/users_api"
+    aws_logs_group        = var.users_api_aws_logs_group
   }
 }
 
 resource "aws_ecs_task_definition" "users_api" {
-  family                   = "users_api_task"
+  family                   = var.users_api_task_family
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
@@ -141,13 +139,13 @@ resource "aws_ecs_task_definition" "users_api" {
 ################################################################################
 
 resource "aws_ecs_service" "users_api" {
-  name            = "users_api"
+  name            = var.users_api_name
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.users_api.arn
-  desired_count   = var.users_api_count
+  desired_count   = var.users_api_desired_count
   launch_type     = "FARGATE"
 
-  health_check_grace_period_seconds = 180
+  health_check_grace_period_seconds = var.health_check_grace_period_seconds
 
   network_configuration {
     security_groups  = [aws_security_group.ecs_tasks.id]
@@ -156,13 +154,13 @@ resource "aws_ecs_service" "users_api" {
   }
 
   load_balancer {
-    target_group_arn = aws_alb_target_group.users_api.id
-    container_name   = "users_api"
+    target_group_arn = aws_alb_target_group.users_api_tg.id
+    container_name   = var.users_api_name
     container_port   = var.users_api_port
   }
 
   service_registries {
-    registry_arn = aws_service_discovery_service.users_api_service.arn
+    registry_arn = aws_service_discovery_service.users_api_service_discovery.arn
   }
 
   depends_on = [aws_alb_listener.main, aws_iam_role_policy_attachment.ecs_task_execution_role]

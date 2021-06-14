@@ -33,6 +33,11 @@ variable "project" {
   default     = "ecs_fargate_ms"
 }
 
+variable "environment" {
+  description = "Indicate the environment"
+  default     = "dec"
+}
+
 ################################################################################
 # ECS Configuration
 ################################################################################
@@ -48,25 +53,55 @@ variable "az_count" {
 
 variable "fargate_cpu" {
   description = "Fargate instance CPU units to provision (1 vCPU = 1024 CPU units)"
-  default     = "512"
+  default     = "256"
 }
 
 variable "fargate_memory" {
   description = "Fargate instance memory to provision (in MiB)"
-  default     = "1024"
+  default     = "512"
+}
+
+variable "health_check_grace_period_seconds" {
+  description = ""
+  default     = 180
 }
 
 ################################################################################
 # API Books Service Configuration
 ################################################################################
+variable "books_api_name" {
+  description = "Defines service name"
+  default     = "books_api"
+}
+
+variable "books_api_image" {
+  description = "Defines service image"
+  default     = "eldimious/books:latest"
+}
+
+variable "books_api_aws_logs_group" {
+  description = "Defines logs group"
+  default     = "/ecs/books_api"
+}
+
+variable "books_api_task_family" {
+  description = "Defines logs group"
+  default     = "books_api_task"
+}
+
 variable "books_api_port" {
   description = "Port exposed by the books image"
   default     = 5000
 }
 
-variable "books_api_count" {
+variable "books_api_desired_count" {
   description = "Number of books docker containers to run"
-  default     = 1
+  default     = 2
+}
+
+variable "books_api_max_count" {
+  description = "Max number of books docker containers to run"
+  default     = 4
 }
 
 variable "books_api_health_check_path" {
@@ -76,14 +111,39 @@ variable "books_api_health_check_path" {
 ################################################################################
 # API Users Service Configuration
 ################################################################################
+variable "users_api_name" {
+  description = "Defines service name"
+  default     = "users_api"
+}
+
+variable "users_api_image" {
+  description = "Defines service image"
+  default     = "eldimious/users:latest"
+}
+
+variable "users_api_aws_logs_group" {
+  description = "Defines logs group"
+  default     = "/ecs/users_api"
+}
+
+variable "users_api_task_family" {
+  description = "Defines logs group"
+  default     = "users_api_task"
+}
+
 variable "users_api_port" {
   description = "Port exposed by the users image"
   default     = 3000
 }
 
-variable "users_api_count" {
+variable "users_api_desired_count" {
   description = "Number of users docker containers to run"
-  default     = 1
+  default     = 2
+}
+
+variable "users_api_max_count" {
+  description = "Max number of users docker containers to run"
+  default     = 4
 }
 
 variable "users_api_health_check_path" {
@@ -96,4 +156,17 @@ variable "users_api_health_check_path" {
 variable "internal_elb" {
   description = "Make ALB private? (Compute nodes are always private under ALB)"
   default     = false
+}
+
+################################################################################
+# Discovery Service Configuration
+################################################################################
+variable "discovery_ttl" {
+  description = "Time to live"
+  default     = 10
+}
+
+variable "discovery_routing_policy" {
+  description = "Defines routing policy"
+  default     = "MULTIVALUE"
 }
