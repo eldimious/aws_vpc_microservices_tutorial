@@ -14,6 +14,29 @@ module "networking" {
   private_subnet_cidrs = [ "192.168.128.0/19", "192.168.160.0/19"]
 }
 
+module "alb" {
+	source          = "./modules/alb"
+  vpc_id = module.networking.id
+  public_subnet_ids  = module.networking.public_subnet_ids
+}
+
+module "roles" {
+	source          = "./modules/roles"
+  ecs_task_execution_role_name = "myEcsTaskExecutionRole"
+}
+
+module "ecs" {
+	source          = "./modules/ecs"
+  vpc_id = module.networking.id
+  private_subnet_ids = module.networking.private_subnet_ids
+  alb_id = module.alb.alb_id
+  aws_security_group_lb_id = module.alb.aws_security_group_lb_id
+  aws_alb_listener_main = module.alb.aws_alb_listener_main
+  aws_alb_listener_main_arn = module.alb.aws_alb_listener_main_arn
+  ecs_task_execution_role = module.roles.ecs_task_execution_role
+  ecs_task_execution_role_arn = module.roles.ecs_task_execution_role_arn
+}
+
 # module "networking" {
 # 		    source          = "cn-terraform/networking/aws"
 #         version         = "2.0.12"

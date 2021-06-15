@@ -51,3 +51,23 @@
 #   value       = local.create_nat == 1 ? aws_nat_gateway.natgw[0].public_ip : ""
 #   description = "The IP of the NAT Gateway."
 # }
+
+output "id" {
+  value = aws_vpc.main.id
+}
+
+output "cidr_block" {
+  value = aws_vpc.main.cidr_block
+}
+
+output "igw" {
+  value = aws_internet_gateway.gw.id
+}
+
+output "public_subnet_ids" {
+  value = "${aws_subnet.public.*.id}"
+}
+
+output "private_subnet_ids" {
+  value = "${aws_subnet.private.*.id}"
+}
