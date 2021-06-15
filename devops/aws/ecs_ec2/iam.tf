@@ -1,68 +1,59 @@
-resource "aws_iam_role" "ecs-instance-role" {
-  name = "ecs-instance-role"
-  path = "/"
-  assume_role_policy = "${data.aws_iam_policy_document.ecs-instance-policy.json}"
-}
-
-data "aws_iam_policy_document" "ecs-instance-policy" {
-   statement {
-  actions = ["sts:AssumeRole"]
-  principals {
-  type = "Service"
-  identifiers = ["ec2.amazonaws.com"]
-  }
- }
-}
-
-resource "aws_iam_role_policy_attachment" "ecs-instance-role-attachment" {
-   role = "${aws_iam_role.ecs-instance-role.name}"
-   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
-}
-
-resource "aws_iam_role" "ecs-service-role" {
-  name = "ecs-service-role"
-  path = "/"
-  assume_role_policy = "${data.aws_iam_policy_document.ecs-service-policy.json}"
-}
-
-resource "aws_iam_role_policy_attachment" "ecs-service-role-attachment" {
-  role = "${aws_iam_role.ecs-service-role.name}"
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole"
-}
-
-data "aws_iam_policy_document" "ecs-service-policy" {
-  statement {
-  actions = ["sts:AssumeRole"]
-  principals {
-  type = "Service"
-  identifiers = ["ecs.amazonaws.com"]
-  }
- }
-}
-
-# ECS task execution role data
-data "aws_iam_policy_document" "ecs_task_execution_role" {
-  version = "2012-10-17"
-  statement {
-    sid = ""
-    effect = "Allow"
-    actions = ["sts:AssumeRole"]
-
-    principals {
-      type        = "Service"
-      identifiers = ["ecs-tasks.amazonaws.com"]
-    }
+# Get latest Amazon Linux 2 AMI by Amazon
+data "aws_ami" "amazon-linux-2" {
+  most_recent = true
+  owners      = ["amazon"]
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm*"]
   }
 }
 
-# ECS task execution role
-resource "aws_iam_role" "ecs_task_execution_role" {
-  name               = var.ecs_task_execution_role_name
-  assume_role_policy = data.aws_iam_policy_document.ecs_task_execution_role.json
+resource "aws_launch_configuration" "ecs_launch_config" {
+  image_id                    = data.aws_ami.amazon-linux-2.image_id
+  iam_instance_profile        = aws_iam_instance_profile.ecs.arn
+  security_groups             = [aws_security_group.ecs_tasks.id]
+  user_data                   = "#!/bin/bash\necho ECS_CLUSTER=app-cluster >> /etc/ecs/ecs.config"
+  instance_type               = "t2.micro"
+  associate_public_ip_address = true
 }
 
-# ECS task execution role policy attachment
-resource "aws_iam_role_policy_attachment" "ecs_task_execution_role" {
-  role       = aws_iam_role.ecs_task_execution_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+resource "aws_autoscaling_group" "ecs_ec2_asg" {
+  name                 = "ECS EC2 ASG"
+  vpc_zone_identifier  = aws_subnet.private.*.id
+  launch_configuration = aws_launch_configuration.ecs_launch_config.name
+
+  desired_capacity          = 1
+  min_size                  = 1
+  max_size                  = 1
+  health_check_grace_period = 300
+  health_check_type         = "EC2"
+}
+
+resource "aws_iam_instance_profile" "ecs" {
+  name = "ecs-ec2-cluster"
+  role = aws_iam_role.ecs.name
+}
+
+resource "aws_iam_role" "ecs" {
+  name               = "ecs-ec2-role"
+  assume_role_policy = <<EOF
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": "sts:AssumeRole",
+            "Principal": {
+               "Service": "ec2.amazonaws.com"
+            },
+            "Effect": "Allow",
+            "Sid": ""
+        }
+    ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_attach" {
+  role       = aws_iam_role.ecs.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role"
 }
