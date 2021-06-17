@@ -21,3 +21,8 @@ variable "health_check_path" {
   default     = "/"
   description = "The default health check path"
 }
+
+variable "environment" {
+  description = "Indicate the environment"
+  default     = "dev"
+}

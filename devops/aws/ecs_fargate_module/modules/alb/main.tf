@@ -7,32 +7,58 @@ resource "aws_alb" "main" {
   security_groups = [aws_security_group.lb.id]
 }
 
-################################################################################
-# ALB Default TG
-################################################################################
-resource "aws_alb_target_group" "default" {
-  name                 = "${var.alb_name}-default"
+resource "aws_alb_target_group" "main" {
+  name                 = "${var.alb_name}-${var.environment}"
   port                 = 80
   protocol             = "HTTP"
   vpc_id               = var.vpc_id
+  target_type          = "ip"
   deregistration_delay = var.deregistration_delay
 
   health_check {
-    path     = var.health_check_path
+    path                = var.health_check_path
     protocol = "HTTP"
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
   }
 }
 
-resource "aws_alb_listener" "main" {
+resource "aws_alb_listener" "http" {
   load_balancer_arn = aws_alb.main.id
-  port              = "80"
+  port              = 80
   protocol          = "HTTP"
-
   default_action {
-    target_group_arn = aws_alb_target_group.default.id
+    target_group_arn = aws_alb_target_group.main.id
     type             = "forward"
   }
 }
+
+# ################################################################################
+# # ALB Default TG
+# ################################################################################
+# resource "aws_alb_target_group" "default" {
+#   name                 = "${var.alb_name}-default"
+#   port                 = 80
+#   protocol             = "HTTP"
+#   vpc_id               = var.vpc_id
+#   deregistration_delay = var.deregistration_delay
+
+#   health_check {
+#     path     = var.health_check_path
+#     protocol = "HTTP"
+#   }
+# }
+
+# resource "aws_alb_listener" "main" {
+#   load_balancer_arn = aws_alb.main.id
+#   port              = "80"
+#   protocol          = "HTTP"
+
+#   default_action {
+#     target_group_arn = aws_alb_target_group.default.id
+#     type             = "forward"
+#   }
+# }
 
 ################################################################################
 # ALB SG
