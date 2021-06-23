@@ -1,0 +1,23 @@
+[
+    {
+      "name": "pink-slon",
+      "image": "eldimious/users:latest",
+      "cpu": 10,
+      "memory": 256,
+      "essential": true,
+      "portMappings": [
+        {   
+          "protocol": "tcp",
+          "containerPort": 5000,
+          "hostPort": 5000
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": { 
+          "awslogs-group" : "/ecs/frontend-container",
+          "awslogs-region": "us-west-2"
+        }
+      }
+    }
+]
