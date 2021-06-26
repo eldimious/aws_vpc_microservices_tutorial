@@ -35,8 +35,8 @@ EOF
   }
 }
 
-resource "aws_autoscaling_group" "books_api_asg" {
-  name                      = "books-api-asg"
+resource "aws_autoscaling_group" "ec2_ecs_asg" {
+  name                      = "ec2-ecs-asg"
   launch_configuration      = aws_launch_configuration.lc.name
   min_size                  = 1
   max_size                  = 4
@@ -44,11 +44,12 @@ resource "aws_autoscaling_group" "books_api_asg" {
   force_delete              = true
   load_balancers            = [] # Only used when NOT using ALB
   # health_check_type         = "ELB"
-  # health_check_grace_period = 300
+  # health_check_type         = "EC2"
+  health_check_grace_period = 300
   vpc_zone_identifier       = aws_subnet.private.*.id
   # target_group_arns         = [aws_alb_target_group.books_api_tg.arn]
-  # protect_from_scale_in     = true
-  # lifecycle {
-  #   create_before_destroy = true
-  # }
+  protect_from_scale_in     = true
+  lifecycle {
+    create_before_destroy = true
+  }
 }
