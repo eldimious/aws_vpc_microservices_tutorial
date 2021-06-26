@@ -13,8 +13,12 @@ resource "aws_alb_listener" "main" {
   protocol          = "HTTP"
 
   default_action {
-    target_group_arn = aws_alb_target_group.books_api_tg.id
-    type             = "forward"
+    type = "fixed-response"
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "Resource not found"
+      status_code  = "404"
+    }
   }
 }
 
