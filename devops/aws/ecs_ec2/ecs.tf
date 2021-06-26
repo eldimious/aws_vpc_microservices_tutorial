@@ -1,20 +1,24 @@
 resource "aws_ecs_cluster" "main" {
   name               = var.project
-  # capacity_providers = [aws_ecs_capacity_provider.capacity_provider.name]
+  # add / remove ec2 instances when we do not have the 
+  # desired capacity to put all the tasks
+  capacity_providers = [aws_ecs_capacity_provider.capacity_provider.name] # https://iam-j.github.io/ecs/capacity-provider-for-scaling/ + https://kerneltalks.com/cloud-services/amazon-ecs-capacity-providers-overview/
 }
 
-# resource "aws_ecs_capacity_provider" "capacity_provider" {
-#   name = "capacity-provider-test"
-#   auto_scaling_group_provider {
-#     auto_scaling_group_arn         = aws_autoscaling_group.books_api_asg.arn
-#     managed_termination_protection = "ENABLED"
+resource "aws_ecs_capacity_provider" "capacity_provider" {
+  name = "capacity-provider-test"
+  auto_scaling_group_provider {
+    auto_scaling_group_arn         = aws_autoscaling_group.ec2_ecs_asg.arn
+    managed_termination_protection = "ENABLED"
 
-#     managed_scaling {
-#       status          = "ENABLED"
-#       target_capacity = 85
-#     }
-#   }
-# }
+    managed_scaling {
+      maximum_scaling_step_size = 4
+      minimum_scaling_step_size = 1
+      status          = "ENABLED"
+      target_capacity = 85
+    }
+  }
+}
 
 ################################################################################
 # BOOKS API ECS Tasks
@@ -57,9 +61,9 @@ resource "aws_ecs_service" "service" {
     container_port   = var.books_api_port
   }
 
-  lifecycle {
-    ignore_changes = [desired_count]
-  }
+  # lifecycle {
+  #   ignore_changes = [desired_count]
+  # }
   depends_on  = [aws_alb_listener.http_listener]
 }
 
@@ -108,8 +112,8 @@ resource "aws_ecs_service" "users_api" {
     container_port   = var.users_api_port
   }
 
-  lifecycle {
-    ignore_changes = [desired_count]
-  }
+  # lifecycle {
+  #   ignore_changes = [desired_count]
+  # }
   depends_on  = [aws_alb_listener.http_listener]
 }
