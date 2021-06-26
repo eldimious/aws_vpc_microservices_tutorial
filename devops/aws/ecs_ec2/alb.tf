@@ -23,49 +23,27 @@ resource "aws_security_group" "lb" {
   }
 }
 
-# resource "aws_alb_target_group" "default" {
-#   name                 = "alb-default"
-#   port                 = 80
-#   protocol             = "HTTP"
-#   vpc_id               = aws_vpc.main.id
-#   health_check {
-#     path     = "/"
-#     protocol = "HTTP"
-#   }
-# }
-
-# resource "aws_alb_listener" "http" {
-#   load_balancer_arn = aws_alb.test-lb.id
-#   port              = "80"
-#   protocol          = "HTTP"
-
-#   default_action {
-#     target_group_arn = aws_alb_target_group.default.id
-#     type             = "forward"
-#   }
-# }
-
 resource "aws_alb_listener" "web-listener" {
   load_balancer_arn = aws_lb.test-lb.arn
-  port              = "80" #na valo 5000
+  port              = "80"
   protocol          = "HTTP"
-  # default_action {
-  #   type = "fixed-response"
-  #   fixed_response {
-  #     content_type = "text/plain"
-  #     message_body = "Resource not found"
-  #     status_code  = "404"
-  #   }
-  # }
   default_action {
-    target_group_arn = aws_lb_target_group.books_api_tg.arn
-    type             = "forward"
+    type = "fixed-response"
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "Resource not found"
+      status_code  = "404"
+    }
   }
+  # default_action {
+  #   target_group_arn = aws_lb_target_group.books_api_tg.arn
+  #   type             = "forward"
+  # }
 }
 
 resource "aws_lb_target_group" "books_api_tg" {
   name        = "books-api-tg"
-  port        = 5000
+  port        = 80 #dn paizei rolo specifying a port for the target group is mandatory but will always be overwritten by the targets that will be attached to the target group. (https://stackoverflow.com/questions/41772377/mapping-multiple-containers-to-an-application-load-balancer-in-terraform)
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
   target_type = "instance"
