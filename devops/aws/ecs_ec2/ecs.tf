@@ -1,9 +1,9 @@
-resource "aws_ecs_cluster" "web-cluster" {
+resource "aws_ecs_cluster" "main" {
   name               = var.project
-  capacity_providers = [aws_ecs_capacity_provider.test.name]
+  capacity_providers = [aws_ecs_capacity_provider.capacity_provider.name]
 }
 
-resource "aws_ecs_capacity_provider" "test" {
+resource "aws_ecs_capacity_provider" "capacity_provider" {
   name = "capacity-provider-test"
   auto_scaling_group_provider {
     auto_scaling_group_arn         = aws_autoscaling_group.asg.arn
@@ -16,52 +16,49 @@ resource "aws_ecs_capacity_provider" "test" {
   }
 }
 
-# update file container-def, so it's pulling image from ecr
+################################################################################
+# BOOKS API ECS Tasks
+################################################################################
+data "template_file" "books_api" {
+  template = file("./templates/ec2/api.json.tpl")
+  vars = {
+    service_name         = var.books_api_name
+    image                = var.books_api_image
+    container_port       = var.books_api_port
+    host_port            = var.books_api_port
+    fargate_cpu          = var.fargate_cpu
+    fargate_memory       = var.fargate_memory
+    aws_region           = var.aws_region
+    aws_logs_group       = var.books_api_aws_logs_group
+  }
+}
+
 resource "aws_ecs_task_definition" "task-definition-test" {
-  family                = "web-family"
-  container_definitions = file("templates/ec2/container-def.json")
-  network_mode          = "bridge"
+  family                   = var.books_api_task_family
+  container_definitions    = data.template_file.books_api.rendered
+  network_mode             = "bridge"
   requires_compatibilities = ["EC2"]
 }
 
 resource "aws_ecs_service" "service" {
-  name            = "web-service"
-  cluster         = aws_ecs_cluster.web-cluster.id
+  name            = var.books_api_name
+  cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.task-definition-test.arn
   desired_count   = 1
-  launch_type = "EC2"
+  launch_type     = "EC2"
   ordered_placement_strategy {
     type  = "binpack"
     field = "cpu"
   }
-  # network_configuration {
-  #   security_groups  = [aws_security_group.ec2-sg.id]
-  #   subnets          = aws_subnet.private.*.id
-  #   assign_public_ip = false
-  # }
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.books_api_tg.arn
-    container_name   = "pink-slon"
-    container_port   = 5000
+    target_group_arn = aws_alb_target_group.books_api_tg.arn
+    container_name   = var.books_api_name
+    container_port   = var.books_api_port
   }
 
-  # load_balancer {
-  #   target_group_arn = aws_lb_target_group.lb_target_group.arn
-  #   container_name   = "pink-slon"
-  #   container_port   = 5000
-  # }
-  # Optional: Allow external changes without Terraform plan difference(for example ASG)
   lifecycle {
     ignore_changes = [desired_count]
   }
   depends_on  = [aws_alb_listener.web-listener]
-}
-
-resource "aws_cloudwatch_log_group" "log_group" {
-  name = "/ecs/frontend-container"
-  tags = {
-    "env"       = "dev"
-    "createdBy" = "mkerimova"
-  }
 }

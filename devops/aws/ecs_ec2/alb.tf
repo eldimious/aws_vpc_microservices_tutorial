@@ -1,30 +1,12 @@
-resource "aws_lb" "test-lb" {
-  name               = "test-ecs-lb"
-  load_balancer_type = "application"
+resource "aws_alb" "main" {
+  name               = "main-ecs-lb"
   internal           = false
   subnets            = aws_subnet.public.*.id
   security_groups    = [aws_security_group.lb.id]
 }
 
-resource "aws_security_group" "lb" {
-  name   = "allow-all-lb"
-  vpc_id = aws_vpc.main.id
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
 resource "aws_alb_listener" "web-listener" {
-  load_balancer_arn = aws_lb.test-lb.arn
+  load_balancer_arn = aws_alb.main.arn
   port              = "80"
   protocol          = "HTTP"
   default_action {
@@ -35,13 +17,12 @@ resource "aws_alb_listener" "web-listener" {
       status_code  = "404"
     }
   }
-  # default_action {
-  #   target_group_arn = aws_lb_target_group.books_api_tg.arn
-  #   type             = "forward"
-  # }
 }
 
-resource "aws_lb_target_group" "books_api_tg" {
+################################################################################
+# Books API Target Group
+################################################################################
+resource "aws_alb_target_group" "books_api_tg" {
   name        = "books-api-tg"
   port        = 80 #dn paizei rolo specifying a port for the target group is mandatory but will always be overwritten by the targets that will be attached to the target group. (https://stackoverflow.com/questions/41772377/mapping-multiple-containers-to-an-application-load-balancer-in-terraform)
   protocol    = "HTTP"
@@ -54,7 +35,7 @@ resource "aws_lb_target_group" "books_api_tg" {
     protocol            = "HTTP"
     matcher             = "200"
     timeout             = "3"
-    path                = "/books/"
+    path                = var.books_api_health_check_path
     unhealthy_threshold = "2"
   }
 }
@@ -65,7 +46,7 @@ resource "aws_alb_listener_rule" "books_api_listener_rule" {
 
   action {
     type             = "forward" # Redirect all traffic from the ALB to the target group
-    target_group_arn = aws_lb_target_group.books_api_tg.arn
+    target_group_arn = aws_alb_target_group.books_api_tg.arn
   }
 
   condition {
