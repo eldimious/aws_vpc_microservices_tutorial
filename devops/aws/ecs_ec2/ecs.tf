@@ -21,6 +21,7 @@ resource "aws_ecs_task_definition" "task-definition-test" {
   family                = "web-family"
   container_definitions = file("templates/ec2/container-def.json")
   network_mode          = "bridge"
+  requires_compatibilities = ["EC2"]
 }
 
 resource "aws_ecs_service" "service" {
@@ -54,7 +55,7 @@ resource "aws_ecs_service" "service" {
   lifecycle {
     ignore_changes = [desired_count]
   }
-  depends_on  = [aws_lb_listener.web-listener]
+  depends_on  = [aws_alb_listener.web-listener]
 }
 
 resource "aws_cloudwatch_log_group" "log_group" {

@@ -3,16 +3,16 @@ resource "aws_lb" "test-lb" {
   load_balancer_type = "application"
   internal           = false
   subnets            = aws_subnet.public.*.id
-  security_groups = [aws_security_group.lb.id]
+  security_groups    = [aws_security_group.lb.id]
 }
 
 resource "aws_security_group" "lb" {
   name   = "allow-all-lb"
   vpc_id = aws_vpc.main.id
   ingress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
   egress {
@@ -23,23 +23,49 @@ resource "aws_security_group" "lb" {
   }
 }
 
-resource "aws_lb_listener" "web-listener" {
+# resource "aws_alb_target_group" "default" {
+#   name                 = "alb-default"
+#   port                 = 80
+#   protocol             = "HTTP"
+#   vpc_id               = aws_vpc.main.id
+#   health_check {
+#     path     = "/"
+#     protocol = "HTTP"
+#   }
+# }
+
+# resource "aws_alb_listener" "http" {
+#   load_balancer_arn = aws_alb.test-lb.id
+#   port              = "80"
+#   protocol          = "HTTP"
+
+#   default_action {
+#     target_group_arn = aws_alb_target_group.default.id
+#     type             = "forward"
+#   }
+# }
+
+resource "aws_alb_listener" "web-listener" {
   load_balancer_arn = aws_lb.test-lb.arn
-  port              = "80"
+  port              = "80" #na valo 5000
   protocol          = "HTTP"
+  # default_action {
+  #   type = "fixed-response"
+  #   fixed_response {
+  #     content_type = "text/plain"
+  #     message_body = "Resource not found"
+  #     status_code  = "404"
+  #   }
+  # }
   default_action {
-    type = "fixed-response"
-    fixed_response {
-      content_type = "text/plain"
-      message_body = "Resource not found"
-      status_code  = "404"
-    }
+    target_group_arn = aws_lb_target_group.books_api_tg.arn
+    type             = "forward"
   }
 }
 
 resource "aws_lb_target_group" "books_api_tg" {
   name        = "books-api-tg"
-  port        = 80
+  port        = 5000
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
   target_type = "instance"
@@ -56,7 +82,7 @@ resource "aws_lb_target_group" "books_api_tg" {
 }
 
 resource "aws_alb_listener_rule" "books_api_listener_rule" {
-  listener_arn = aws_lb_listener.web-listener.arn
+  listener_arn = aws_alb_listener.web-listener.arn
   priority     = 1
 
   action {

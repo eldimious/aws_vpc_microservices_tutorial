@@ -24,11 +24,16 @@ resource "aws_security_group" "ec2-sg" {
   vpc_id      = aws_vpc.main.id
   # Traffic to the ECS cluster should only come from the ALB SG
   ingress {
-    from_port = 0
-    to_port   = 0
-    protocol  = "-1"
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    # from_port                = 32768 # ephemeral port range for bridge networking tasks
+    # to_port                  = 60999 
+    # protocol  = "TCP"
     # Only allowing traffic in from the load balancer security group
     security_groups = [aws_security_group.lb.id]
+    # source_security_group_id = module.alb.alb_security_group_id
+    # security_group_id        = module.ecs_instances.ecs_instance_security_group_id
   }
 
   egress {

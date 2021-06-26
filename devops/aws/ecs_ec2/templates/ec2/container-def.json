@@ -2,14 +2,13 @@
     {
       "name": "pink-slon",
       "image": "eldimious/users:latest",
-      "cpu": 10,
-      "memory": 256,
+      "cpu": 1024,
+      "memory": 2048,
       "essential": true,
       "portMappings": [
         {   
           "protocol": "tcp",
-          "containerPort": 5000,
-          "hostPort": 5000
+          "containerPort": 5000
         }
       ],
       "logConfiguration": {
