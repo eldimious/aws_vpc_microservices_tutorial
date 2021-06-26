@@ -53,12 +53,12 @@ variable "az_count" {
 
 variable "fargate_cpu" {
   description = "Fargate instance CPU units to provision (1 vCPU = 1024 CPU units)"
-  default     = "256"
+  default     = "128"
 }
 
 variable "fargate_memory" {
   description = "Fargate instance memory to provision (in MiB)"
-  default     = "512"
+  default     = "256"
 }
 
 variable "health_check_grace_period_seconds" {
@@ -96,7 +96,7 @@ variable "books_api_port" {
 
 variable "books_api_desired_count" {
   description = "Number of books docker containers to run"
-  default     = 2
+  default     = 1
 }
 
 variable "books_api_max_count" {
@@ -138,7 +138,7 @@ variable "users_api_port" {
 
 variable "users_api_desired_count" {
   description = "Number of users docker containers to run"
-  default     = 2
+  default     = 1
 }
 
 variable "users_api_max_count" {

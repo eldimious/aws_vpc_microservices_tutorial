@@ -5,7 +5,7 @@ resource "aws_alb" "main" {
   security_groups    = [aws_security_group.lb.id]
 }
 
-resource "aws_alb_listener" "web-listener" {
+resource "aws_alb_listener" "http_listener" {
   load_balancer_arn = aws_alb.main.arn
   port              = "80"
   protocol          = "HTTP"
@@ -24,7 +24,7 @@ resource "aws_alb_listener" "web-listener" {
 ################################################################################
 resource "aws_alb_target_group" "books_api_tg" {
   name        = "books-api-tg"
-  port        = 80 #dn paizei rolo specifying a port for the target group is mandatory but will always be overwritten by the targets that will be attached to the target group. (https://stackoverflow.com/questions/41772377/mapping-multiple-containers-to-an-application-load-balancer-in-terraform)
+  port        = 80 # (https://stackoverflow.com/questions/41772377/mapping-multiple-containers-to-an-application-load-balancer-in-terraform)
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
   target_type = "instance"
@@ -41,7 +41,7 @@ resource "aws_alb_target_group" "books_api_tg" {
 }
 
 resource "aws_alb_listener_rule" "books_api_listener_rule" {
-  listener_arn = aws_alb_listener.web-listener.arn
+  listener_arn = aws_alb_listener.http_listener.arn
   priority     = 1
 
   action {
@@ -52,6 +52,46 @@ resource "aws_alb_listener_rule" "books_api_listener_rule" {
   condition {
     path_pattern {
       values = ["/books", "/books/*"]
+    }
+  }
+}
+
+################################################################################
+# Users API Target Group
+################################################################################
+resource "aws_alb_target_group" "users_api_tg" {
+  name        = "users-api-tg"
+  port        = 80
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.main.id
+  target_type = "instance"
+
+  health_check {
+    healthy_threshold   = "3"
+    interval            = "30"
+    protocol            = "HTTP"
+    matcher             = "200"
+    timeout             = "3"
+    path                = var.users_api_health_check_path
+    unhealthy_threshold = "2"
+  }
+}
+
+################################################################################
+# Users API Listeners
+################################################################################
+resource "aws_alb_listener_rule" "users_api_listener_rule" {
+  listener_arn = aws_alb_listener.http_listener.arn
+  priority     = 2
+
+  action {
+    type             = "forward" # Redirect all traffic from the ALB to the target group
+    target_group_arn = aws_alb_target_group.users_api_tg.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/users", "/users/*"]
     }
   }
 }
