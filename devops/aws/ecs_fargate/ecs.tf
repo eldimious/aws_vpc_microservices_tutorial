@@ -45,9 +45,6 @@ resource "aws_service_discovery_service" "users_api_service_discovery" {
   }
 }
 
-# TODO:
-# Merge ecs tasks in one definition using foreach
-
 ################################################################################
 # BOOKS API ECS Tasks
 ################################################################################

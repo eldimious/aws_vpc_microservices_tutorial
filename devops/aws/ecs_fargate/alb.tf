@@ -2,7 +2,7 @@
 # ALB Definition
 ################################################################################
 resource "aws_alb" "main" {
-  name            = "load-balancer"
+  name            = "main-ecs-lb"
   subnets         = aws_subnet.public.*.id
   security_groups = [aws_security_group.lb.id]
 }
