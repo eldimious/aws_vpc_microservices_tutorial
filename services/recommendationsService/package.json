@@ -1,13 +1,12 @@
 {
-  "name": "usersservice",
+  "name": "recommendationsservice",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node ./src/index",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Dimos Botsaris",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.19.0",
@@ -16,7 +15,6 @@
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "express-useragent": "^1.0.15",
-    "helmet": "^4.6.0",
-    "node-fetch": "^2.6.1"
+    "helmet": "^4.6.0"
   }
 }
