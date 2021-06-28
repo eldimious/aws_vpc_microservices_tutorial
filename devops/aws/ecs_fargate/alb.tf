@@ -101,3 +101,43 @@ resource "aws_alb_listener_rule" "users_api_listener_rule" {
     }
   }
 }
+
+################################################################################
+# Recommendations API Target Group
+################################################################################
+resource "aws_alb_target_group" "recommendations_api_tg" {
+  name        = "recommendations-api-tg"
+  port        = 80
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.main.id
+  target_type = "ip"
+
+  health_check {
+    healthy_threshold   = "3"
+    interval            = "30"
+    protocol            = "HTTP"
+    matcher             = "200"
+    timeout             = "3"
+    path                = var.recommendations_api_health_check_path
+    unhealthy_threshold = "2"
+  }
+}
+
+################################################################################
+# Recommendations API Listeners
+################################################################################
+resource "aws_alb_listener_rule" "recommendations_api_listener_rule" {
+  listener_arn = aws_alb_listener.main.arn
+  priority     = 3
+
+  action {
+    type             = "forward" # Redirect all traffic from the ALB to the target group
+    target_group_arn = aws_alb_target_group.recommendations_api_tg.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/recommendations", "/recommendations/*"]
+    }
+  }
+}

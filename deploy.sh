@@ -14,6 +14,10 @@ cd ./services/booksService &&
 cd ../usersService &&
 ./deploy_users_service.sh &&
 
+# Deploy recommendations API docker image
+cd ../recommendationsService &&
+./deploy_recommendations_service.sh &&
+
 # Deploy to cloud host (default AWS)
 if [ $lauch_type = "fargate" ]; then
   cd ../../devops/aws/ecs_fargate &&
