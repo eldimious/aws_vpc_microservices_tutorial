@@ -60,8 +60,8 @@ resource "aws_security_group" "private_ecs_tasks" {
     from_port = 0
     to_port   = 0
     protocol  = "-1"
-    # Only allowing traffic in from the other ecs tasks
-    security_groups = [var.cidr_block]
+    # Only allowing traffic in from the other ecs tasks in vpc
+    cidr_blocks = [var.cidr_block]
   }
 
   egress {
