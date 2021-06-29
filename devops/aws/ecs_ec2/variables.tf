@@ -180,7 +180,7 @@ variable "recommendations_api_port" {
 
 variable "recommendations_api_desired_count" {
   description = "Number of recommendations docker containers to run"
-  default     = 2
+  default     = 1
 }
 
 variable "recommendations_api_max_count" {

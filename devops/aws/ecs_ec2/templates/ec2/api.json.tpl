@@ -19,6 +19,7 @@
         "hostPort": 0,
         "protocol": "tcp"
       }
-    ]
+    ],
+    "environment": ${service_enviroment}
   }
 ]

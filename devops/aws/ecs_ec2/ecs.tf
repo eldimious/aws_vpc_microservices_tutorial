@@ -5,6 +5,61 @@ resource "aws_ecs_cluster" "main" {
   capacity_providers = [aws_ecs_capacity_provider.capacity_provider.name] # https://iam-j.github.io/ecs/capacity-provider-for-scaling/ + https://kerneltalks.com/cloud-services/amazon-ecs-capacity-providers-overview/
 }
 
+resource "aws_service_discovery_private_dns_namespace" "segment" {
+  name        = "discovery.com"
+  description = "Service discovery for backends"
+  vpc         = aws_vpc.main.id
+}
+
+resource "aws_service_discovery_service" "books_api_service_discovery" {
+  name = "books_api"
+
+  dns_config {
+    namespace_id = aws_service_discovery_private_dns_namespace.segment.id
+
+    dns_records {
+      ttl  = var.discovery_ttl
+      type = "A"
+    }
+
+    routing_policy = var.discovery_routing_policy
+  }
+}
+
+resource "aws_service_discovery_service" "users_api_service_discovery" {
+  name = "users_api"
+
+  dns_config {
+    namespace_id = aws_service_discovery_private_dns_namespace.segment.id
+
+    dns_records {
+      ttl  = var.discovery_ttl
+      type = "A"
+    }
+
+    routing_policy = var.discovery_routing_policy
+  }
+
+  health_check_custom_config {
+    failure_threshold = 1
+  }
+}
+
+resource "aws_service_discovery_service" "recommendations_api_service_discovery" {
+  name = "recommendations_api"
+
+  dns_config {
+    namespace_id = aws_service_discovery_private_dns_namespace.segment.id
+
+    dns_records {
+      ttl  = var.discovery_ttl
+      type = "A"
+    }
+
+    routing_policy = var.discovery_routing_policy
+  }
+}
+
 resource "aws_ecs_capacity_provider" "capacity_provider" {
   name = "capacity-provider-test"
   auto_scaling_group_provider {
@@ -34,6 +89,7 @@ data "template_file" "books_api" {
     fargate_memory       = var.fargate_memory
     aws_region           = var.aws_region
     aws_logs_group       = var.books_api_aws_logs_group
+    service_enviroment   = jsonencode([])
   }
 }
 
@@ -61,6 +117,10 @@ resource "aws_ecs_service" "service" {
     container_port   = var.books_api_port
   }
 
+  service_registries {
+    registry_arn = aws_service_discovery_service.books_api_service_discovery.arn
+  }
+
   # lifecycle {
   #   ignore_changes = [desired_count]
   # }
@@ -82,6 +142,12 @@ data "template_file" "users_api" {
     fargate_memory        = var.fargate_memory
     aws_region            = var.aws_region
     aws_logs_group        = var.users_api_aws_logs_group
+    service_enviroment    = jsonencode([
+      {
+        "name": "RECOMMENDATIONS_SERVICE_URL",
+        "value": "http://${aws_service_discovery_service.recommendations_api_service_discovery.name}.${aws_service_discovery_private_dns_namespace.segment.name}:${var.recommendations_api_port}"
+      }
+    ])
   }
 }
 
@@ -112,8 +178,57 @@ resource "aws_ecs_service" "users_api" {
     container_port   = var.users_api_port
   }
 
+  service_registries {
+    registry_arn = aws_service_discovery_service.users_api_service_discovery.arn
+  }
+
   # lifecycle {
   #   ignore_changes = [desired_count]
   # }
   depends_on  = [aws_alb_listener.http_listener]
+}
+
+################################################################################
+# RECOMMENDATION API ECS Tasks
+################################################################################
+data "template_file" "recommendations_api" {
+  template = file("./templates/ec2/api.json.tpl")
+
+  vars = {
+    service_name         = var.recommendations_api_name
+    image                = var.recommendations_api_image
+    container_port       = var.recommendations_api_port
+    host_port            = var.recommendations_api_port
+    fargate_cpu          = var.fargate_cpu
+    fargate_memory       = var.fargate_memory
+    aws_region           = var.aws_region
+    aws_logs_group       = var.recommendations_api_aws_logs_group
+    service_enviroment   = jsonencode([])
+  }
+}
+
+resource "aws_ecs_task_definition" "recommendations_api" {
+  family                   = var.recommendations_api_task_family
+  container_definitions    = data.template_file.recommendations_api.rendered
+  network_mode             = "bridge"
+  requires_compatibilities = ["EC2"]
+}
+
+################################################################################
+# RECOMMENDATION API ECS Service
+################################################################################
+resource "aws_ecs_service" "recommendations_api" {
+  name            = var.recommendations_api_name
+  cluster         = aws_ecs_cluster.main.id
+  task_definition = aws_ecs_task_definition.recommendations_api.arn
+  desired_count   = var.recommendations_api_desired_count
+  launch_type     = "EC2"
+  ordered_placement_strategy {
+    type  = "binpack"
+    field = "cpu"
+  }
+
+  service_registries {
+    registry_arn = aws_service_discovery_service.recommendations_api_service_discovery.arn
+  }
 }
