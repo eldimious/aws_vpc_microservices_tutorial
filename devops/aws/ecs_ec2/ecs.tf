@@ -118,7 +118,9 @@ resource "aws_ecs_service" "service" {
   }
 
   service_registries {
-    registry_arn = aws_service_discovery_service.books_api_service_discovery.arn
+    registry_arn      = aws_service_discovery_service.books_api_service_discovery.arn
+    container_name    = var.books_api_name
+    container_port    = var.books_api_port
   }
 
   # lifecycle {
@@ -179,7 +181,9 @@ resource "aws_ecs_service" "users_api" {
   }
 
   service_registries {
-    registry_arn = aws_service_discovery_service.users_api_service_discovery.arn
+    registry_arn      = aws_service_discovery_service.users_api_service_discovery.arn
+    container_name    = var.users_api_name
+    container_port    = var.users_api_port
   }
 
   # lifecycle {
@@ -229,6 +233,8 @@ resource "aws_ecs_service" "recommendations_api" {
   }
 
   service_registries {
-    registry_arn = aws_service_discovery_service.recommendations_api_service_discovery.arn
+    registry_arn      = aws_service_discovery_service.recommendations_api_service_discovery.arn
+    container_name    = var.recommendations_api_name
+    container_port    = var.recommendations_api_port
   }
 }
