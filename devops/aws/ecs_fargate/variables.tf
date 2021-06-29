@@ -105,7 +105,7 @@ variable "books_api_max_count" {
 }
 
 variable "books_api_health_check_path" {
-  default = "/books/"
+  default = "/books/health-check"
 }
 
 ################################################################################
@@ -147,7 +147,49 @@ variable "users_api_max_count" {
 }
 
 variable "users_api_health_check_path" {
-  default = "/users"
+  default = "/users/health-check"
+}
+
+################################################################################
+# API Recommendations Service Configuration
+################################################################################
+variable "recommendations_api_name" {
+  description = "Defines service name"
+  default     = "recommendations_api"
+}
+
+variable "recommendations_api_image" {
+  description = "Defines service image"
+  default     = "eldimious/recommendations:latest"
+}
+
+variable "recommendations_api_aws_logs_group" {
+  description = "Defines logs group"
+  default     = "/ecs/recommendations_api"
+}
+
+variable "recommendations_api_task_family" {
+  description = "Defines logs group"
+  default     = "recommendations_api_task"
+}
+
+variable "recommendations_api_port" {
+  description = "Port exposed by the recommendations image"
+  default     = 3333
+}
+
+variable "recommendations_api_desired_count" {
+  description = "Number of recommendations docker containers to run"
+  default     = 2
+}
+
+variable "recommendations_api_max_count" {
+  description = "Max number of recommendations docker containers to run"
+  default     = 4
+}
+
+variable "recommendations_api_health_check_path" {
+  default = "/recommendations/health-check"
 }
 
 ################################################################################

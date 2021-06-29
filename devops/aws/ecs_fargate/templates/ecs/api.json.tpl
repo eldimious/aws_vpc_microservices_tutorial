@@ -18,6 +18,7 @@
         "containerPort": ${container_port},
         "hostPort": ${host_port}
       }
-    ]
+    ],
+    "environment": ${service_enviroment}
   }
 ]
