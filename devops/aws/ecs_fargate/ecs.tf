@@ -137,7 +137,7 @@ data "template_file" "users_api" {
     service_enviroment    = jsonencode([
       {
         "name": "RECOMMENDATIONS_SERVICE_URL",
-        "value": "http://${recommendations_api_service_discovery.name}.${segment.name}:${var.recommendations_api_port}"
+        "value": "http://${aws_service_discovery_service.recommendations_api_service_discovery.name}.${aws_service_discovery_private_dns_namespace.segment.name}:${var.recommendations_api_port}"
       }
     ])
   }
