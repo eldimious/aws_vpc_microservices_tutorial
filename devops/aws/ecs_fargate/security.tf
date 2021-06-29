@@ -46,3 +46,28 @@ resource "aws_security_group" "ecs_tasks" {
     cidr_blocks = ["0.0.0.0/0"] # Allowing traffic out to all IP addresses
   }
 }
+
+################################################################################
+# PRIVATE ECS cluster tasks SG
+################################################################################
+resource "aws_security_group" "private_ecs_tasks" {
+  name        = "private-ecs-tasks-security-group"
+  description = "private ecs tasks, not internet facing. allow inbound access from other ecs tasks only"
+  vpc_id      = aws_vpc.main.id
+
+  # Traffic to the ECS cluster should only come from the ALB SG
+  ingress {
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+    # Only allowing traffic in from the other ecs tasks
+    security_groups = [var.cidr_block]
+  }
+
+  egress {
+    from_port   = 0 # Allowing any incoming port
+    to_port     = 0 # Allowing any outgoing port
+    protocol    = "-1" # Allowing any outgoing protocol
+    cidr_blocks = ["0.0.0.0/0"] # Allowing traffic out to all IP addresses
+  }
+}
