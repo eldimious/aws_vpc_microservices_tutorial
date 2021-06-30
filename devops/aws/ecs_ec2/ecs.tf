@@ -19,7 +19,8 @@ resource "aws_service_discovery_service" "books_api_service_discovery" {
 
     dns_records {
       ttl  = var.discovery_ttl
-      type = "SRV"
+      # type = "SRV"
+      type = "A"
     }
 
     routing_policy = var.discovery_routing_policy
@@ -34,7 +35,8 @@ resource "aws_service_discovery_service" "users_api_service_discovery" {
 
     dns_records {
       ttl  = var.discovery_ttl
-      type = "SRV"
+      # type = "SRV"
+      type = "A"
     }
 
     routing_policy = var.discovery_routing_policy
@@ -53,7 +55,8 @@ resource "aws_service_discovery_service" "recommendations_api_service_discovery"
 
     dns_records {
       ttl  = var.discovery_ttl
-      type = "SRV"
+      # type = "SRV"
+      type = "A"
     }
 
     routing_policy = var.discovery_routing_policy
@@ -61,7 +64,7 @@ resource "aws_service_discovery_service" "recommendations_api_service_discovery"
 }
 
 resource "aws_ecs_capacity_provider" "capacity_provider" {
-  name = "capacity-provider-test"
+  name = "capacity-provider-ecs-ec2"
   auto_scaling_group_provider {
     auto_scaling_group_arn         = aws_autoscaling_group.ec2_ecs_asg.arn
     managed_termination_protection = "ENABLED"
@@ -96,7 +99,8 @@ data "template_file" "books_api" {
 resource "aws_ecs_task_definition" "books_api" {
   family                   = var.books_api_task_family
   container_definitions    = data.template_file.books_api.rendered
-  network_mode             = "bridge"
+  # network_mode             = "bridge"
+  network_mode             = "awsvpc"
   requires_compatibilities = ["EC2"]
 }
 
@@ -108,7 +112,7 @@ resource "aws_ecs_service" "service" {
   launch_type     = "EC2"
   ordered_placement_strategy {
     type  = "binpack"
-    field = "cpu"
+    field = "memory"
   }
 
   load_balancer {
@@ -117,10 +121,16 @@ resource "aws_ecs_service" "service" {
     container_port   = var.books_api_port
   }
 
+  network_configuration {
+    security_groups  = [aws_security_group.ec2_sg.id]
+    subnets          = aws_subnet.private.*.id
+    assign_public_ip = false
+  }
+
   service_registries {
     registry_arn      = aws_service_discovery_service.books_api_service_discovery.arn
-    container_name    = var.books_api_name # we need it because of bridge network mode
-    container_port    = var.books_api_port # we need it because of bridge network mode
+    # container_name    = var.books_api_name # we need it because of bridge network mode
+    # container_port    = var.books_api_port # we need it because of bridge network mode
   }
 
   # lifecycle {
@@ -156,7 +166,7 @@ data "template_file" "users_api" {
 resource "aws_ecs_task_definition" "users_api" {
   family                   = var.users_api_task_family
   container_definitions    = data.template_file.users_api.rendered
-  network_mode             = "bridge"
+  network_mode             = "awsvpc"
   requires_compatibilities = ["EC2"]
 }
 
@@ -171,7 +181,13 @@ resource "aws_ecs_service" "users_api" {
   launch_type     = "EC2"
   ordered_placement_strategy {
     type  = "binpack"
-    field = "cpu"
+    field = "memory"
+  }
+
+  network_configuration {
+    security_groups  = [aws_security_group.ec2_sg.id]
+    subnets          = aws_subnet.private.*.id
+    assign_public_ip = false
   }
 
   load_balancer {
@@ -182,8 +198,8 @@ resource "aws_ecs_service" "users_api" {
 
   service_registries {
     registry_arn      = aws_service_discovery_service.users_api_service_discovery.arn
-    container_name    = var.users_api_name # we need it because of bridge network mode
-    container_port    = var.users_api_port # we need it because of bridge network mode
+    # container_name    = var.users_api_name # we need it because of bridge network mode
+    # container_port    = var.users_api_port # we need it because of bridge network mode
   }
 
   # lifecycle {
@@ -214,7 +230,7 @@ data "template_file" "recommendations_api" {
 resource "aws_ecs_task_definition" "recommendations_api" {
   family                   = var.recommendations_api_task_family
   container_definitions    = data.template_file.recommendations_api.rendered
-  network_mode             = "bridge"
+  network_mode             = "awsvpc"
   requires_compatibilities = ["EC2"]
 }
 
@@ -229,12 +245,22 @@ resource "aws_ecs_service" "recommendations_api" {
   launch_type     = "EC2"
   ordered_placement_strategy {
     type  = "binpack"
-    field = "cpu"
+    field = "memory"
   }
+
+  network_configuration {
+    security_groups  = [aws_security_group.private_ecs_ec2_tasks.id]
+    subnets          = aws_subnet.private.*.id
+    assign_public_ip = false
+  }
+
+  # lifecycle {
+  #   ignore_changes = [desired_count]
+  # }
 
   service_registries {
     registry_arn      = aws_service_discovery_service.recommendations_api_service_discovery.arn
-    container_name    = var.recommendations_api_name # we need it because of bridge network mode
-    container_port    = var.recommendations_api_port # we need it because of bridge network mode
+    # container_name    = var.recommendations_api_name # we need it because of bridge network mode
+    # container_port    = var.recommendations_api_port # we need it because of bridge network mode
   }
 }

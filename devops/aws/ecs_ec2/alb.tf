@@ -27,7 +27,8 @@ resource "aws_alb_target_group" "books_api_tg" {
   port        = 80 # (https://stackoverflow.com/questions/41772377/mapping-multiple-containers-to-an-application-load-balancer-in-terraform)
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
-  target_type = "instance"
+  # target_type = "instance"
+  target_type = "ip"
 
   health_check {
     healthy_threshold   = "3"
@@ -64,7 +65,8 @@ resource "aws_alb_target_group" "users_api_tg" {
   port        = 80
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
-  target_type = "instance"
+  # target_type = "instance"
+  target_type = "ip"
 
   health_check {
     healthy_threshold   = "3"
