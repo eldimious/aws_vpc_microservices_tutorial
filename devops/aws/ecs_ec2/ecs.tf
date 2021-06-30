@@ -19,7 +19,7 @@ resource "aws_service_discovery_service" "books_api_service_discovery" {
 
     dns_records {
       ttl  = var.discovery_ttl
-      type = "A"
+      type = "SRV"
     }
 
     routing_policy = var.discovery_routing_policy
@@ -34,7 +34,7 @@ resource "aws_service_discovery_service" "users_api_service_discovery" {
 
     dns_records {
       ttl  = var.discovery_ttl
-      type = "A"
+      type = "SRV"
     }
 
     routing_policy = var.discovery_routing_policy
@@ -53,7 +53,7 @@ resource "aws_service_discovery_service" "recommendations_api_service_discovery"
 
     dns_records {
       ttl  = var.discovery_ttl
-      type = "A"
+      type = "SRV"
     }
 
     routing_policy = var.discovery_routing_policy
@@ -119,8 +119,8 @@ resource "aws_ecs_service" "service" {
 
   service_registries {
     registry_arn      = aws_service_discovery_service.books_api_service_discovery.arn
-    container_name    = var.books_api_name
-    container_port    = var.books_api_port
+    container_name    = var.books_api_name # we need it because of bridge network mode
+    container_port    = var.books_api_port # we need it because of bridge network mode
   }
 
   # lifecycle {
@@ -182,8 +182,8 @@ resource "aws_ecs_service" "users_api" {
 
   service_registries {
     registry_arn      = aws_service_discovery_service.users_api_service_discovery.arn
-    container_name    = var.users_api_name
-    container_port    = var.users_api_port
+    container_name    = var.users_api_name # we need it because of bridge network mode
+    container_port    = var.users_api_port # we need it because of bridge network mode
   }
 
   # lifecycle {
@@ -234,7 +234,7 @@ resource "aws_ecs_service" "recommendations_api" {
 
   service_registries {
     registry_arn      = aws_service_discovery_service.recommendations_api_service_discovery.arn
-    container_name    = var.recommendations_api_name
-    container_port    = var.recommendations_api_port
+    container_name    = var.recommendations_api_name # we need it because of bridge network mode
+    container_port    = var.recommendations_api_port # we need it because of bridge network mode
   }
 }
