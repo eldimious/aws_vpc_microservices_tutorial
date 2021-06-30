@@ -55,12 +55,11 @@ resource "aws_security_group" "private_ecs_tasks" {
   description = "private ecs tasks, not internet facing. allow inbound access from other ecs tasks only"
   vpc_id      = aws_vpc.main.id
 
-  # Traffic to the ECS cluster should only come from the ALB SG
+  # Traffic to the ECS cluster should only come from the other ecs tasks in vpc
   ingress {
     from_port = 0
     to_port   = 0
     protocol  = "-1"
-    # Only allowing traffic in from the other ecs tasks in vpc
     cidr_blocks = [var.cidr_block]
   }
 

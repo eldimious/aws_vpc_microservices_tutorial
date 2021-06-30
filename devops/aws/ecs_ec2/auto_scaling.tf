@@ -23,7 +23,7 @@ resource "aws_launch_configuration" "lc" {
   image_id      = data.aws_ami.amazon_linux.id
   instance_type = "t2.micro"
   iam_instance_profile        = aws_iam_instance_profile.ecs_service_role.name
-  security_groups             = [aws_security_group.ec2-sg.id]
+  security_groups             = [aws_security_group.ec2_sg.id]
   associate_public_ip_address = false
   user_data                   = <<EOF
 #! /bin/bash
@@ -38,9 +38,9 @@ EOF
 resource "aws_autoscaling_group" "ec2_ecs_asg" {
   name                      = "ec2-ecs-asg"
   launch_configuration      = aws_launch_configuration.lc.name
-  min_size                  = 1
-  max_size                  = 4
-  desired_capacity          = 1
+  desired_capacity          = 3
+  min_size                  = 3
+  max_size                  = 5
   force_delete              = true
   load_balancers            = [] # Only used when NOT using ALB
   # health_check_type         = "ELB"

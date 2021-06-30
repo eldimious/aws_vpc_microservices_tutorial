@@ -4,7 +4,7 @@
     "image": "${image}",
     "cpu": ${fargate_cpu},
     "memory": ${fargate_memory},
-    "essential": true,
+    "networkMode": "awsvpc",
     "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
@@ -16,9 +16,9 @@
     "portMappings": [
       {
         "containerPort": ${container_port},
-        "hostPort": 0,
-        "protocol": "tcp"
+        "hostPort": ${host_port}
       }
-    ]
+    ],
+    "environment": ${service_enviroment}
   }
 ]
