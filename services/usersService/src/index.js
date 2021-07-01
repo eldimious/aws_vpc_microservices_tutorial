@@ -10,6 +10,7 @@ const {
 const {
   fetchGet
 } = require('./common/utils');
+const users = require('./common/users');
 
 const app = express();
 app.use(useragent.express());
@@ -21,7 +22,12 @@ app.use(cors());
 app.get('/users', async (req, res, next) => {
   console.log("Enter users route handler");
   return res.status(200).send({
-    data: 'Users connected.'
+    data: users,
+    pagination: {
+      total: users.length,
+      page: 1,
+      pageSize: users.length
+    }
   });
 });
 
