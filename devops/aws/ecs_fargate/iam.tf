@@ -34,11 +34,11 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role" {
 ################################################################################
 resource "aws_iam_role" "vpc_flow_cloudwatch_logs_role" {
   name               = "vpc-flow-cloudwatch-logs-role"
-  assume_role_policy = file("./templates/policies/vpc_flow_cloudwatch_logs_role.json.tpl")
+  assume_role_policy = file("../common/templates/policies/vpc_flow_cloudwatch_logs_role.json.tpl")
 }
 
 resource "aws_iam_role_policy" "vpc_flow_cloudwatch_logs_policy" {
   name = "vpc-flow-cloudwatch-logs-policy"
   role = aws_iam_role.vpc_flow_cloudwatch_logs_role.id
-  policy = file("./templates/policies/vpc_flow_cloudwatch_logs_policy.json.tpl")
+  policy = file("../common/templates/policies/vpc_flow_cloudwatch_logs_policy.json.tpl")
 }
