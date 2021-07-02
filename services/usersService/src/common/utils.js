@@ -12,7 +12,7 @@ async function checkStatus(res) {
   throw new Error(msg);
 }
 
-async function fetchGet({
+async function makeGetRequest({
   url,
   params = {},
   headers = { 'Content-Type': 'application/json' },
@@ -29,5 +29,5 @@ async function fetchGet({
 }
 
 module.exports = {
-  fetchGet,
+  makeGetRequest,
 };

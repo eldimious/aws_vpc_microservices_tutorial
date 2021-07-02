@@ -8,8 +8,9 @@ const {
   recommendationsService: recommendationsServiceConfig
 } = require('./configuration');
 const {
-  fetchGet
+  makeGetRequest
 } = require('./common/utils');
+const users = require('./common/users');
 
 const app = express();
 app.use(useragent.express());
@@ -21,17 +22,21 @@ app.use(cors());
 app.get('/users', async (req, res, next) => {
   console.log("Enter users route handler");
   return res.status(200).send({
-    data: 'Users connected.'
+    data: users,
+    pagination: {
+      total: users.length,
+      page: 1,
+      pageSize: users.length
+    }
   });
 });
 
 app.get('/users/:id/recommendations', async (req, res, next) => {
-  console.log("Enter users recommendations route handler", recommendationsServiceConfig.baseUrl);
+  console.log("Enter users recommendations route handler", req.params.id);
   try {
-    const response = await fetchGet({
-      url: `${recommendationsServiceConfig.baseUrl}/recommendations`
+    const response = await makeGetRequest({
+      url: `${recommendationsServiceConfig.baseUrl}/recommendations?user_id=${req.params.id}`
     });
-    console.log('response', response)
     return res.status(200).send(response);
   } catch (error) {
     console.error(`Error on recommendations`, error)
