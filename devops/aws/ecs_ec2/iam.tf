@@ -1,5 +1,5 @@
 resource "aws_iam_role" "ecs_instance_role" {
-  name = "ecs-instance-role-test-web"
+  name = "ecs-instance-role-service"
   path = "/"
   assume_role_policy = file("../common/templates/policies/ecs_instance_role.json.tpl")
 }

@@ -4,7 +4,7 @@
 # Provides a VPC/Subnet/ENI Flow Log to capture IP traffic for a specific network interface, 
 # subnet, or VPC. Logs are sent to a CloudWatch Log Group or a S3 Bucket.
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/flow_log
-resource "aws_flow_log" "example" {
+resource "aws_flow_log" "vpc_flow_logs" {
   iam_role_arn    = aws_iam_role.vpc_flow_cloudwatch_logs_role.arn
   log_destination = aws_cloudwatch_log_group.vpc_flow_logs.arn
   traffic_type    = "ALL"
@@ -13,6 +13,7 @@ resource "aws_flow_log" "example" {
 
 resource "aws_cloudwatch_log_group" "vpc_flow_logs" {
   name = "vpc-flow-logs"
+  retention_in_days = 30
 }
 
 # Set up CloudWatch group and log stream and retain logs for 30 days
