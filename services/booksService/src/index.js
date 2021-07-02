@@ -4,7 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const compress = require('compression')();
 const useragent = require('express-useragent');
-const fetch = require('node-fetch');
+const books = require('./common/books');
 
 const app = express();
 app.use(useragent.express());
@@ -16,7 +16,12 @@ app.use(cors());
 app.get('/books', async (req, res, next) => {
   console.log("Enter books route handler");
   return res.status(200).send({
-    data: 'Books connected.'
+    data: books,
+    pagination: {
+      total: books.length,
+      page: 1,
+      pageSize: books.length
+    }
   });
 });
 
