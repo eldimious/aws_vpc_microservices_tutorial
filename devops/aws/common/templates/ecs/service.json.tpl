@@ -4,7 +4,7 @@
     "image": "${image}",
     "cpu": ${fargate_cpu},
     "memory": ${fargate_memory},
-    "networkMode": "awsvpc",
+    "networkMode": "${network_mode}",
     "logConfiguration": {
         "logDriver": "awslogs",
         "options": {

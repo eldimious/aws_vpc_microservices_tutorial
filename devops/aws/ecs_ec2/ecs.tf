@@ -82,7 +82,7 @@ resource "aws_ecs_capacity_provider" "capacity_provider" {
 # BOOKS API ECS Tasks
 ################################################################################
 data "template_file" "books_api" {
-  template = file("./templates/ec2/api.json.tpl")
+  template = file("../common/templates/ecs/service.json.tpl")
   vars = {
     service_name         = var.books_api_name
     image                = var.books_api_image
@@ -92,6 +92,7 @@ data "template_file" "books_api" {
     fargate_memory       = var.fargate_memory
     aws_region           = var.aws_region
     aws_logs_group       = var.books_api_aws_logs_group
+    network_mode         = var.network_mode
     service_enviroment   = jsonencode([])
   }
 }
@@ -143,7 +144,7 @@ resource "aws_ecs_service" "service" {
 # USERS API ECS Tasks
 ################################################################################
 data "template_file" "users_api" {
-  template = file("./templates/ec2/api.json.tpl")
+  template = file("../common/templates/ecs/service.json.tpl")
 
   vars = {
     service_name          = var.users_api_name
@@ -154,6 +155,7 @@ data "template_file" "users_api" {
     fargate_memory        = var.fargate_memory
     aws_region            = var.aws_region
     aws_logs_group        = var.users_api_aws_logs_group
+    network_mode          = var.network_mode
     service_enviroment    = jsonencode([
       {
         "name": "RECOMMENDATIONS_SERVICE_URL",
@@ -212,7 +214,7 @@ resource "aws_ecs_service" "users_api" {
 # RECOMMENDATION API ECS Tasks
 ################################################################################
 data "template_file" "recommendations_api" {
-  template = file("./templates/ec2/api.json.tpl")
+  template = file("../common/templates/ecs/service.json.tpl")
 
   vars = {
     service_name         = var.recommendations_api_name
@@ -223,6 +225,7 @@ data "template_file" "recommendations_api" {
     fargate_memory       = var.fargate_memory
     aws_region           = var.aws_region
     aws_logs_group       = var.recommendations_api_aws_logs_group
+    network_mode         = var.network_mode
     service_enviroment   = jsonencode([])
   }
 }

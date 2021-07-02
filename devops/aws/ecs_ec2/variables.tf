@@ -66,6 +66,11 @@ variable "health_check_grace_period_seconds" {
   default     = 180
 }
 
+variable "network_mode" {
+  description = "Set network mode of esc tasks"
+  default     = "awsvpc"
+}
+
 ################################################################################
 # API Books Service Configuration
 ################################################################################
