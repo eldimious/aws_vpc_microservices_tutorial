@@ -1,4 +1,4 @@
-FROM node:12-alpine as builder
+FROM node:14-alpine as builder
 ARG NPM_TOKEN
 RUN mkdir -p /build
 
